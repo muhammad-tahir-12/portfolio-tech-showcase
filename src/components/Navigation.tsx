@@ -34,7 +34,7 @@ const Navigation = () => {
           
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-8">
-            {['Home', 'Projects', 'Skills', 'Contact'].map((item) => (
+            {['Home', 'Experience', 'Education', 'Projects', 'Skills', 'Contact'].map((item) => (
               <button
                 key={item}
                 onClick={() => scrollToSection(item.toLowerCase())}
@@ -58,7 +58,7 @@ const Navigation = () => {
         {isOpen && (
           <div className="md:hidden bg-black/95 backdrop-blur-md rounded-lg shadow-lg shadow-blue-500/10 mb-4 border border-gray-800">
             <div className="px-4 py-2 space-y-2">
-              {['Home', 'Projects', 'Skills', 'Contact'].map((item) => (
+              {['Home', 'Experience', 'Education', 'Projects', 'Skills', 'Contact'].map((item) => (
                 <button
                   key={item}
                   onClick={() => scrollToSection(item.toLowerCase())}
