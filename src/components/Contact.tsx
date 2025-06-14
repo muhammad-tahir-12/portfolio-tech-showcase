@@ -1,9 +1,10 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
+import { useProfile } from '@/hooks/usePortfolioData';
 
 const Contact = () => {
+  const { data: profile, isLoading: profileLoading, isError: profileError } = useProfile();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -35,6 +36,43 @@ const Contact = () => {
     }, 1000);
   };
 
+  // Loading state for profile
+  if (profileLoading) {
+    return (
+      <section id="contact" className="py-20 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Get In Touch
+              </span>
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="animate-pulse space-y-8">
+              <div className="h-6 bg-gray-700 rounded w-32"></div>
+              <div className="h-4 bg-gray-700 rounded w-full"></div>
+              <div className="space-y-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center space-x-4 p-4 rounded-xl bg-gray-900/50">
+                    <div className="w-12 h-12 bg-gray-600 rounded-full"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-700 rounded w-16"></div>
+                      <div className="h-3 bg-gray-700 rounded w-24"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="animate-pulse">
+              <div className="bg-gray-900/80 rounded-3xl p-8 h-96"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="contact" className="py-20 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -63,25 +101,34 @@ const Contact = () => {
             </div>
 
             <div className="space-y-6">
-              <div className="group flex items-center space-x-4 p-4 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-blue-500/50 transition-all duration-300">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Mail size={20} className="text-white" />
+              {profile?.email && (
+                <div className="group flex items-center space-x-4 p-4 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-blue-500/50 transition-all duration-300">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <Mail size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white">Email</div>
+                    <a 
+                      href={`mailto:${profile.email}`}
+                      className="text-gray-300 hover:text-blue-400 transition-colors duration-300"
+                    >
+                      {profile.email}
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-semibold text-white">Email</div>
-                  <div className="text-gray-300">hello@example.com</div>
-                </div>
-              </div>
+              )}
 
-              <div className="group flex items-center space-x-4 p-4 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-blue-500/50 transition-all duration-300">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <MapPin size={20} className="text-white" />
+              {profile?.location && (
+                <div className="group flex items-center space-x-4 p-4 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-blue-500/50 transition-all duration-300">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <MapPin size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white">Location</div>
+                    <div className="text-gray-300">{profile.location}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-semibold text-white">Location</div>
-                  <div className="text-gray-300">New York, NY</div>
-                </div>
-              </div>
+              )}
 
               <div className="group flex items-center space-x-4 p-4 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-blue-500/50 transition-all duration-300">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -93,6 +140,38 @@ const Contact = () => {
                 </div>
               </div>
             </div>
+
+            {/* Social Links */}
+            {(profile?.github_url || profile?.linkedin_url) && (
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-600/10 rounded-2xl blur-3xl"></div>
+                <div className="relative bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-6">
+                  <h4 className="text-lg font-semibold text-white mb-4">Connect on Social</h4>
+                  <div className="flex space-x-4">
+                    {profile?.github_url && (
+                      <a
+                        href={profile.github_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors duration-300"
+                      >
+                        <span className="text-gray-300">GitHub</span>
+                      </a>
+                    )}
+                    {profile?.linkedin_url && (
+                      <a
+                        href={profile.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-300"
+                      >
+                        <span className="text-white">LinkedIn</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Decorative Element */}
             <div className="relative">
@@ -195,7 +274,7 @@ const Contact = () => {
         {/* Footer */}
         <div className="mt-20 pt-8 border-t border-gray-800 text-center">
           <p className="text-gray-400">
-            © 2024 Portfolio. Built with React, TypeScript, and Tailwind CSS.
+            © 2024 {profile?.name || 'Portfolio'}. Built with React, TypeScript, and Tailwind CSS.
           </p>
         </div>
       </div>

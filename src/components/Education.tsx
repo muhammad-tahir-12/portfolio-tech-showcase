@@ -1,48 +1,100 @@
 import React from 'react';
 import { Calendar, GraduationCap, MapPin, Compass, Trophy, BookOpen } from 'lucide-react';
+import { useEducation } from '@/hooks/usePortfolioData';
 
 const Education = () => {
-  const educationData = [
-    {
-      id: 1,
-      degree: "Master of Computer Science",
-      institution: "Tech University",
-      period: "2018 - 2020",
-      description: "Specialized in Software Engineering and Machine Learning. Graduated with distinction.",
-      gpa: "3.8/4.0",
-      waypoint: "Advanced Learning Hub",
-      category: "Graduate Studies",
-      icon: Trophy,
-      color: "from-purple-500 to-pink-500",
-      achievements: ["Graduated with Distinction", "ML Research Project", "Academic Excellence Award"]
-    },
-    {
-      id: 2,
-      degree: "Bachelor of Computer Science",
-      institution: "State University",
-      period: "2014 - 2018",
-      description: "Focused on full-stack development and database systems. Active in coding competitions.",
-      gpa: "3.6/4.0",
-      waypoint: "Foundation Base",
-      category: "Undergraduate Studies",
-      icon: BookOpen,
-      color: "from-blue-500 to-cyan-500",
-      achievements: ["Coding Competition Winner", "Dean's List", "Full-Stack Projects"]
-    },
-    {
-      id: 3,
-      degree: "High School Diploma",
-      institution: "Central High School",
-      period: "2010 - 2014",
-      description: "Valedictorian. President of Computer Science Club.",
-      gpa: "4.0/4.0",
-      waypoint: "Starting Point",
-      category: "Secondary Education",
-      icon: GraduationCap,
-      color: "from-green-500 to-emerald-500",
-      achievements: ["Valedictorian", "CS Club President", "Perfect GPA"]
-    }
-  ];
+  const { data: educationData, isLoading, isError } = useEducation();
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <section id="education" className="py-20 bg-gradient-to-br from-black via-gray-900 to-purple-900/20 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-6xl font-bold">
+              <span className="bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Learning Journey
+              </span>
+            </h2>
+          </div>
+          <div className="animate-pulse space-y-20">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center justify-center">
+                <div className="w-full max-w-lg">
+                  <div className="h-80 bg-gray-700 rounded-3xl"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <section id="education" className="py-20 bg-gradient-to-br from-black via-gray-900 to-purple-900/20 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center">
+            <p className="text-red-400 text-xl">Error loading education data. Please try again later.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Helper function to format date
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Present';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  };
+
+  // Helper function to create period string
+  const createPeriod = (startDate: string | null, endDate: string | null) => {
+    const start = formatDate(startDate);
+    const end = formatDate(endDate);
+    return `${start} - ${end}`;
+  };
+
+  // Helper function to determine icon based on degree
+  const getIcon = (degree: string) => {
+    if (degree.toLowerCase().includes('master')) return Trophy;
+    if (degree.toLowerCase().includes('bachelor')) return BookOpen;
+    if (degree.toLowerCase().includes('phd') || degree.toLowerCase().includes('doctorate')) return Trophy;
+    return GraduationCap;
+  };
+
+  // Helper function to determine color based on level
+  const getColor = (index: number) => {
+    const colors = [
+      'from-purple-500 to-pink-500',
+      'from-blue-500 to-cyan-500',
+      'from-green-500 to-emerald-500',
+      'from-yellow-500 to-orange-500',
+      'from-red-500 to-pink-500'
+    ];
+    return colors[index % colors.length];
+  };
+
+  // Helper function to determine category
+  const getCategory = (degree: string) => {
+    if (degree.toLowerCase().includes('master')) return 'Graduate Studies';
+    if (degree.toLowerCase().includes('bachelor')) return 'Undergraduate Studies';
+    if (degree.toLowerCase().includes('phd') || degree.toLowerCase().includes('doctorate')) return 'Doctoral Studies';
+    if (degree.toLowerCase().includes('high school') || degree.toLowerCase().includes('diploma')) return 'Secondary Education';
+    return 'Academic Studies';
+  };
+
+  // Helper function to determine waypoint
+  const getWaypoint = (index: number, total: number, degree: string) => {
+    if (index === 0 && degree.toLowerCase().includes('master')) return 'Advanced Learning Hub';
+    if (index === 0) return 'Current Achievement';
+    if (index === total - 1) return 'Starting Point';
+    if (degree.toLowerCase().includes('bachelor')) return 'Foundation Base';
+    return 'Learning Milestone';
+  };
 
   return (
     <section id="education" className="py-20 bg-gradient-to-br from-black via-gray-900 to-purple-900/20 relative overflow-hidden">
@@ -98,16 +150,36 @@ const Education = () => {
                 className="animate-pulse"
               />
               {/* Waypoint markers along the path */}
-              <circle cx="200" cy="600" r="8" fill="#10B981" className="animate-pulse"/>
-              <circle cx="500" cy="400" r="8" fill="#3B82F6" className="animate-pulse"/>
-              <circle cx="800" cy="200" r="8" fill="#8B5CF6" className="animate-pulse"/>
+              {educationData?.map((_, index) => {
+                const positions = [
+                  { cx: 200, cy: 600 },
+                  { cx: 500, cy: 400 },
+                  { cx: 800, cy: 200 }
+                ];
+                const pos = positions[index] || positions[positions.length - 1];
+                const colors = ["#10B981", "#3B82F6", "#8B5CF6"];
+                return (
+                  <circle 
+                    key={index} 
+                    cx={pos.cx} 
+                    cy={pos.cy} 
+                    r="8" 
+                    fill={colors[index % colors.length]} 
+                    className="animate-pulse"
+                  />
+                );
+              })}
             </svg>
           </div>
 
           {/* Education Waypoints */}
           <div className="relative z-20 space-y-20">
-            {educationData.map((edu, index) => {
-              const IconComponent = edu.icon;
+            {educationData?.map((edu, index) => {
+              const IconComponent = getIcon(edu.degree);
+              const color = getColor(index);
+              const category = getCategory(edu.degree);
+              const waypoint = getWaypoint(index, educationData.length, edu.degree);
+              
               return (
                 <div key={edu.id} className={`flex items-center ${
                   index % 2 === 0 ? 'justify-start' : 'justify-end'
@@ -122,8 +194,8 @@ const Education = () => {
                       <div className="relative">
                         <div className="bg-gradient-to-r from-gray-800 to-gray-700 border-2 border-gray-600 rounded-lg px-6 py-3 shadow-lg transform rotate-1">
                           <div className="text-center">
-                            <div className="text-xs text-gray-400 mb-1">{edu.category}</div>
-                            <div className="text-sm font-bold text-white">{edu.waypoint}</div>
+                            <div className="text-xs text-gray-400 mb-1">{category}</div>
+                            <div className="text-sm font-bold text-white">{waypoint}</div>
                           </div>
                         </div>
                         {/* Arrow pointer */}
@@ -136,7 +208,7 @@ const Education = () => {
                       index % 2 === 0 ? 'justify-start' : 'justify-end'
                     }`}>
                       <div className="relative group">
-                        <div className={`w-20 h-20 bg-gradient-to-r ${edu.color} rounded-full flex items-center justify-center shadow-2xl border-4 border-white/20 group-hover:scale-110 transition-all duration-300`}>
+                        <div className={`w-20 h-20 bg-gradient-to-r ${color} rounded-full flex items-center justify-center shadow-2xl border-4 border-white/20 group-hover:scale-110 transition-all duration-300`}>
                           <IconComponent className="w-10 h-10 text-white" />
                         </div>
                         {/* Waypoint number */}
@@ -153,12 +225,12 @@ const Education = () => {
                     {/* Education Destination Card */}
                     <div className="relative group">
                       {/* Glowing background */}
-                      <div className={`absolute inset-0 bg-gradient-to-r ${edu.color} opacity-10 rounded-3xl blur-xl group-hover:opacity-20 transition-all duration-300`}></div>
+                      <div className={`absolute inset-0 bg-gradient-to-r ${color} opacity-10 rounded-3xl blur-xl group-hover:opacity-20 transition-all duration-300`}></div>
                       
                       <div className="relative bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl border border-gray-700 rounded-3xl p-8 shadow-2xl group-hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105">
                         {/* Category ribbon */}
-                        <div className={`absolute -top-3 left-8 bg-gradient-to-r ${edu.color} text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg`}>
-                          {edu.category}
+                        <div className={`absolute -top-3 left-8 bg-gradient-to-r ${color} text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg`}>
+                          {category}
                         </div>
 
                         {/* Header section */}
@@ -166,38 +238,50 @@ const Education = () => {
                           <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center">
                               <Calendar className="w-5 h-5 text-gray-400 mr-2" />
-                              <span className="text-sm text-gray-400">{edu.period}</span>
+                              <span className="text-sm text-gray-400">{createPeriod(edu.start_date, edu.end_date)}</span>
                             </div>
-                            <div className={`px-3 py-1 bg-gradient-to-r ${edu.color} bg-opacity-20 border border-current rounded-full`}>
-                              <span className="text-sm font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-                                GPA: {edu.gpa}
-                              </span>
-                            </div>
+                            {edu.gpa && (
+                              <div className={`px-3 py-1 bg-gradient-to-r ${color} bg-opacity-20 border border-current rounded-full`}>
+                                <span className="text-sm font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+                                  GPA: {edu.gpa}
+                                </span>
+                              </div>
+                            )}
                           </div>
                           
                           <h3 className="text-2xl font-bold text-white mb-3">{edu.degree}</h3>
-                          <h4 className={`text-xl font-semibold bg-gradient-to-r ${edu.color} bg-clip-text text-transparent mb-4`}>
+                          <h4 className={`text-xl font-semibold bg-gradient-to-r ${color} bg-clip-text text-transparent mb-4`}>
                             {edu.institution}
                           </h4>
+                          {edu.location && (
+                            <div className="flex items-center text-gray-400 mb-4">
+                              <MapPin className="w-4 h-4 mr-1" />
+                              {edu.location}
+                            </div>
+                          )}
                         </div>
                         
-                        <p className="text-gray-300 mb-8 leading-relaxed text-lg">{edu.description}</p>
+                        {edu.description && (
+                          <p className="text-gray-300 mb-8 leading-relaxed text-lg">{edu.description}</p>
+                        )}
                         
                         {/* Achievements section */}
-                        <div className="mb-6">
-                          <h5 className="text-lg font-semibold text-white mb-4 flex items-center">
-                            <Trophy className="w-5 h-5 text-yellow-400 mr-2" />
-                            Key Achievements
-                          </h5>
-                          <div className="grid grid-cols-1 gap-3">
-                            {edu.achievements.map((achievement, idx) => (
-                              <div key={idx} className="flex items-center bg-gray-800/50 rounded-lg p-3">
-                                <span className="text-green-400 mr-3 text-lg">🎯</span>
-                                <span className="text-gray-300">{achievement}</span>
-                              </div>
-                            ))}
+                        {edu.achievements && edu.achievements.length > 0 && (
+                          <div className="mb-6">
+                            <h5 className="text-lg font-semibold text-white mb-4 flex items-center">
+                              <Trophy className="w-5 h-5 text-yellow-400 mr-2" />
+                              Key Achievements
+                            </h5>
+                            <div className="grid grid-cols-1 gap-3">
+                              {edu.achievements.map((achievement, idx) => (
+                                <div key={idx} className="flex items-center bg-gray-800/50 rounded-lg p-3">
+                                  <span className="text-green-400 mr-3 text-lg">🎯</span>
+                                  <span className="text-gray-300">{achievement}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                         {/* Navigation coordinates */}
                         <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700">
@@ -205,8 +289,8 @@ const Education = () => {
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-300">Level: {educationData.length - index}</span>
                             <span className="text-sm text-gray-300">Status: Completed ✓</span>
-                            <span className={`text-sm bg-gradient-to-r ${edu.color} bg-clip-text text-transparent font-bold`}>
-                              {edu.waypoint}
+                            <span className={`text-sm bg-gradient-to-r ${color} bg-clip-text text-transparent font-bold`}>
+                              {waypoint}
                             </span>
                           </div>
                         </div>
@@ -230,26 +314,28 @@ const Education = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="text-center group">
                   <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <span className="text-2xl font-bold text-white">10+</span>
+                    <span className="text-2xl font-bold text-white">{educationData?.length || 0}</span>
                   </div>
-                  <h4 className="text-xl font-semibold text-white mb-2">Years Learning</h4>
-                  <p className="text-gray-300">Continuous education journey</p>
+                  <h4 className="text-xl font-semibold text-white mb-2">Degrees Earned</h4>
+                  <p className="text-gray-300">Educational milestones achieved</p>
                 </div>
                 
                 <div className="text-center group">
                   <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <span className="text-2xl font-bold text-white">3.8</span>
+                    <span className="text-2xl font-bold text-white">
+                      {educationData?.reduce((total, edu) => total + (edu.achievements?.length || 0), 0) || 0}
+                    </span>
                   </div>
-                  <h4 className="text-xl font-semibold text-white mb-2">Average GPA</h4>
-                  <p className="text-gray-300">Academic excellence maintained</p>
+                  <h4 className="text-xl font-semibold text-white mb-2">Achievements</h4>
+                  <p className="text-gray-300">Academic accomplishments</p>
                 </div>
                 
                 <div className="text-center group">
                   <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                     <Trophy className="w-10 h-10 text-white" />
                   </div>
-                  <h4 className="text-xl font-semibold text-white mb-2">Multiple Awards</h4>
-                  <p className="text-gray-300">Recognition for excellence</p>
+                  <h4 className="text-xl font-semibold text-white mb-2">Excellence</h4>
+                  <p className="text-gray-300">Commitment to learning</p>
                 </div>
               </div>
             </div>
